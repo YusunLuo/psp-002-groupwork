@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>AI Code Tutor</title>
+    <style>
+        * { box-sizing: border-box; font-family: system-ui, sans-serif; }
+        body { max-width: 900px; margin: 30px auto; padding: 0 20px; background-color: #f5f7fa; }
+        h1 { text-align: center; color: #222; }
+        #codeInput {
+            width: 100%; height: 260px; padding: 12px;
+            font-family: Consolas, monospace; font-size: 14px;
+            border: 1px solid #ccc; border-radius: 6px; resize: vertical;
+        }
+        .btn-group { margin:12px 0; }
+        button {
+            padding: 10px 24px; margin-right:10px; border: none; border-radius: 5px;
+            background-color: #2b78e4; color: white; font-size:15px; cursor: pointer;
+        }
+        #clearBtn { background-color: #777; }
+        #resultBox {
+            width:100%; min-height:220px; padding:15px;
+            border:1px solid #ccc; border-radius:6px;
+            background-color: #fff; white-space: pre-wrap; overflow-y: auto;
+        }
+        .api-key-box {
+            width: 100%; padding: 10px; margin-bottom: 12px;
+            border: 1px solid #ccc; border-radius: 5px; font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🤖 AI Code Tutor</h1>
+
+    <input type="password" id="apiKeyInput" class="api-key-box" placeholder="Enter your DeepSeek API Key">
+
+    <textarea id="codeInput" placeholder="Paste your Python code here..."></textarea>
+    <div class="btn-group">
+        <button id="submitBtn">🔍 Submit for Check</button>
+        <button id="clearBtn">🗑️ Clear</button>
+    </div>
+    <div id="resultBox">AI feedback will be displayed here...</div>
+
+    <script>
+        document.getElementById('submitBtn').onclick = async function() {
+            // Read API Key from input box
+            const apiKey = document.getElementById('apiKeyInput').value.trim();
+            if (!apiKey) {
+                document.getElementById('resultBox').innerText = '❌ Please enter your API Key first!';
+                return;
+            }
+
+            const code = document.getElementById('codeInput').value.trim();
+            if (!code) {
+                document.getElementById('resultBox').innerText = 'Please paste some code first!';
+                return;
+            }
+
+            const btn = this;
+            btn.disabled = true;
+            btn.innerText = '⏳ Analyzing...';
+            document.getElementById('resultBox').innerText = 'Calling AI for analysis, please wait...';
+
+            try {
+                const response = await fetch('https://api.deepseek.com/v1/chat/completions', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${apiKey}`
+                    },
+                    body: JSON.stringify({
+                        model: 'deepseek-chat',
+                        messages: [
+                            {
+                                role: 'system',
+                                content: `You are a patient programming teaching assistant for beginners.
+Rules:
+1. Point out every error in the code, specifying the line number, the error type, and the reason.
+2. Explain the relevant knowledge point for each error (e.g., if-statement syntax, function usage).
+3. Do not give the correct answer directly; provide hints to guide the student to fix it themselves.
+4. Be encouraging and use simple, easy-to-understand language.`
+                            },
+                            {
+                                role: 'user',
+                                content: `Please analyze this code:\n${code}`
+                            }
+                        ]
+                    })
+                });
+
+                const data = await response.json();
+                if (data.error) {
+                    document.getElementById('resultBox').innerText = '❌ Error: ' + data.error.message;
+                } else {
+                    document.getElementById('resultBox').innerText = data.choices[0].message.content;
+                }
+            } catch (err) {
+                document.getElementById('resultBox').innerText = '❌ Network error: ' + err.message;
+            } finally {
+                btn.disabled = false;
+                btn.innerText = '🔍 Submit for Check';
+            }
+        };
+
+        document.getElementById('clearBtn').onclick = function() {
+            document.getElementById('codeInput').value = '';
+            document.getElementById('resultBox').innerText = 'AI feedback will be displayed here...';
+        };
+    </script>
+</body>
+</html>
