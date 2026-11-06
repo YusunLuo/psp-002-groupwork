@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -23,17 +24,11 @@
             border:1px solid #ccc; border-radius:6px;
             background-color: #fff; white-space: pre-wrap; overflow-y: auto;
         }
-        .api-key-box {
-            width: 100%; padding: 10px; margin-bottom: 12px;
-            border: 1px solid #ccc; border-radius: 5px; font-size: 14px;
-        }
+        .loading { opacity: 0.6; pointer-events: none; }
     </style>
 </head>
 <body>
     <h1>🤖 AI Code Tutor</h1>
-
-    <input type="password" id="apiKeyInput" class="api-key-box" placeholder="Enter your DeepSeek API Key">
-
     <textarea id="codeInput" placeholder="Paste your Python code here..."></textarea>
     <div class="btn-group">
         <button id="submitBtn">🔍 Submit for Check</button>
@@ -42,14 +37,10 @@
     <div id="resultBox">AI feedback will be displayed here...</div>
 
     <script>
-        document.getElementById('submitBtn').onclick = async function() {
-            // Read API Key from input box
-            const apiKey = document.getElementById('apiKeyInput').value.trim();
-            if (!apiKey) {
-                document.getElementById('resultBox').innerText = '❌ Please enter your API Key first!';
-                return;
-            }
+        // ⚠️ Replace the following API key with your real DeepSeek API key
+        const API_KEY = "sk-6dc893d478c642e18fefc98fd43a66f7";
 
+        document.getElementById('submitBtn').onclick = async function() {
             const code = document.getElementById('codeInput').value.trim();
             if (!code) {
                 document.getElementById('resultBox').innerText = 'Please paste some code first!';
@@ -66,7 +57,7 @@
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${apiKey}`
+                        'Authorization': `Bearer ${API_KEY}`
                     },
                     body: JSON.stringify({
                         model: 'deepseek-chat',
